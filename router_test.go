@@ -697,3 +697,23 @@ func TestRouterServeFiles(t *testing.T) {
 		t.Error("serving file failed")
 	}
 }
+
+func TestMatchedRoutePathFromContext(t *testing.T) {
+	router := New()
+	router.SaveMatchedRoutePath = true
+
+	route1 := "/user/:name"
+	routed1 := false
+	router.GET(route1, func(_ http.ResponseWriter, req *http.Request, ps Params) {
+		route := MatchedRoutePathFromContext(req.Context())
+		if route != route1 {
+			t.Fatalf("Wrong matched route: want %s, got %s", route1, route)
+		}
+		routed1 = true
+	})
+	router.ServeHTTP(new(mockResponseWriter), httptest.NewRequest(http.MethodGet, "/user/gopher", nil))
+	if !routed1 {
+		t.Fatal("Routing failed!")
+	}
+
+}
